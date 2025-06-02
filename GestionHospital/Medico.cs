@@ -54,6 +54,19 @@ namespace GestionHospital
             PacientesAsignados.Remove(paciente);
         }
 
+        public void ListarPacientes()
+        {
+            Console.WriteLine($"\nPacientes del Dr./Dra. {this.Apellidos} (DNI: {this.Dni}):");
+
+            if (PacientesAsignados.Count == 0)
+            {
+                Console.WriteLine("No hay pacientes asignados a este médico.");
+                return;
+            }
+            foreach (var paciente in PacientesAsignados)
+                Console.WriteLine(paciente);
+        }
+
         public override string ToString()
         {
             return $"{base.ToString()} - Especialidad: {Especialidad} - Nº Colegiado: {NumeroColegiado}";

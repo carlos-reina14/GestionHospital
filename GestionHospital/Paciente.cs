@@ -13,7 +13,7 @@ namespace GestionHospital
             set
             {
                 if (!EsNumeroHistoriaClinicaValido(value))
-                    throw new ArgumentException("Formato de Número de Historia Clínica no válido. Debe ser así: HCL-YYYY-0000 o HCL-YYYY-000000");
+                    throw new ArgumentException("Formato de Número de Historia Clínica no válido. Debe ser así: HCL-YYYY-0000");
                 _numeroHistoriaClinica = value;
             }
         }
@@ -32,7 +32,7 @@ namespace GestionHospital
         {
             if (string.IsNullOrEmpty(numeroHistoriaClinica))
                 return false;
-            return Regex.IsMatch(numeroHistoriaClinica, @"^HCL-\d{4}-\d{4,6}$");
+            return Regex.IsMatch(numeroHistoriaClinica, @"^HCL-\d{4}-\d{4}$");
         }
 
         public override string ToString()

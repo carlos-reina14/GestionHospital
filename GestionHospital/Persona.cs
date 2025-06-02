@@ -31,7 +31,7 @@ namespace GestionHospital
         {
             if (string.IsNullOrEmpty(dni))
                 return false;
-            return Regex.IsMatch(dni, @"^\d{8}[A-Z]$");
+            return Regex.IsMatch(dni, @"^\d{8}[A-Za-z]$");
         }
 
         public override string ToString()
