@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace GestionHospital
@@ -18,12 +19,14 @@ namespace GestionHospital
                 _numeroColegiado = value;
             } 
         }
+        public List<Paciente> PacientesAsignados { get; private set; }
 
         public Medico(string nombre, string apellidos, string dni, string especialidad, string numeroColegiado)
             : base(nombre, apellidos, dni)
         {
             Especialidad = especialidad;
             NumeroColegiado = numeroColegiado;
+            PacientesAsignados = new List<Paciente>();
         }
 
         private static bool EsNumeroColegiadoValido(string numeroColegiado)
@@ -31,6 +34,24 @@ namespace GestionHospital
             if (string.IsNullOrEmpty(numeroColegiado))
                 return false;
             return Regex.IsMatch(numeroColegiado, @"^\d{9}$");
+        }
+
+        public void AsignarPaciente(Paciente paciente)
+        {
+            if (paciente == null)
+                throw new ArgumentNullException(nameof(paciente), "El paciente no puede ser nulo.");
+            if (PacientesAsignados.Contains(paciente))
+                throw new InvalidOperationException("El paciente ya está asignado a este médico.");
+            PacientesAsignados.Add(paciente);
+        }
+
+        public void EliminarPaciente(Paciente paciente)
+        {
+            if (paciente == null)
+                throw new ArgumentNullException(nameof(paciente), "El paciente no puede ser nulo.");
+            if (!PacientesAsignados.Contains(paciente))
+                throw new InvalidOperationException("El paciente no está asignado a este médico.");
+            PacientesAsignados.Remove(paciente);
         }
 
         public override string ToString()
