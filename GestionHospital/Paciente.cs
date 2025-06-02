@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace GestionHospital
 {
-    public class Program
+    public class Paciente : Persona
     {
-        static void Main()
-        {
-        }
     }
 }
