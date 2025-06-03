@@ -7,6 +7,7 @@ namespace GestionHospital
     public class Hospital
     {
         private List<Persona> _personas = new List<Persona>();
+        private List<Cita> _citas = new List<Cita>();
         private static int _siguienteNumHistoriaClinica = 1;
 
         public void IniciarAplicacion()
@@ -19,7 +20,7 @@ namespace GestionHospital
                 opcion = Console.ReadLine();
                 TratarOpcion(opcion);
             }
-            while (opcion != "9");
+            while (opcion != "13");
         }
 
         private void MostrarMenu()
@@ -33,7 +34,11 @@ namespace GestionHospital
             Console.WriteLine("6. Eliminar un paciente");
             Console.WriteLine("7. Ver la lista de todas las personas del hospital");
             Console.WriteLine("8. Modificar datos de una persona");
-            Console.WriteLine("9. Salir");
+            Console.WriteLine("9. Programar una cita");
+            Console.WriteLine("10. Cancelar una cita");
+            Console.WriteLine("11. Modificar una cita");
+            Console.WriteLine("12. Listar todas las citas");
+            Console.WriteLine("13. Salir");
             Console.Write("Seleccione una opción: ");
         }
 
@@ -66,8 +71,20 @@ namespace GestionHospital
                     ModificarDatosPersona();
                     break;
                 case "9":
-                    Console.WriteLine("Saliendo de la aplicación. ¡Hasta pronto!");
-                    return;
+                    ProgramarCita();
+                    break;
+                case "10":
+                    Console.WriteLine("Funcionalidad de cancelar cita aún no implementada.");
+                    break;
+                case "11":
+                    Console.WriteLine("Funcionalidad de modificar cita aún no implementada.");
+                    break;
+                case "12":
+                    ListarCitas();
+                    break;
+                case "13":
+                    Console.WriteLine("Saliendo del sistema. ¡Gracias por usar el Sistema de Gestión del Hospital!");
+                    break;
                 default:
                     Console.WriteLine("Opción no válida. Por favor, intente de nuevo.");
                     break;
@@ -354,7 +371,7 @@ namespace GestionHospital
             Console.WriteLine("\n--- Modificar Datos de una Persona ---");
             Console.Write("Ingrese el DNI de la persona a modificar: ");
             string dni = Console.ReadLine();
-            Persona personaAModificar = _personas.FirstOrDefault(p => p.Dni == dni.ToUpper());
+            Persona personaAModificar = BuscarPersonaPorDni(dni);
 
             if (personaAModificar == null)
             {
@@ -394,6 +411,11 @@ namespace GestionHospital
             }
 
             Console.WriteLine($"Datos modificados: {personaAModificar}");
+        }
+
+        private Persona BuscarPersonaPorDni(string dni)
+        {
+            return _personas.FirstOrDefault(p => p.Dni == dni.ToUpper());
         }
 
         private void CambiarDatosGeneralesPersona(Persona personaAModificar)
@@ -484,6 +506,108 @@ namespace GestionHospital
             Console.Write("Nuevo Departamento (dejar en blanco para no cambiar): ");
             string nuevoDepartamento = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(nuevoDepartamento)) administrativo.Departamento = nuevoDepartamento;
+        }
+
+        public void ProgramarCita()
+        {
+            Console.WriteLine("\n--- Programar Nueva Cita ---");
+            ListarMedicos();
+            Console.Write("Ingrese DNI del médico para la cita: ");
+            string dniMedico = Console.ReadLine();
+
+            if (!(BuscarPersonaPorDni(dniMedico) is Medico medico))
+            {
+                Console.WriteLine("Médico no encontrado. No se puede programar la cita.");
+                return;
+            }
+
+            ListarPacientes();
+            Console.Write("Ingrese DNI del paciente para la cita: ");
+            string dniPaciente = Console.ReadLine();
+
+            if (!(BuscarPersonaPorDni(dniPaciente) is Paciente paciente))
+            {
+                Console.WriteLine("Paciente no encontrado. No se puede programar la cita.");
+                return;
+            }
+
+            Console.Write("Ingrese Fecha de la cita (DD/MM/YYYY): ");
+            string fechaStr = Console.ReadLine();
+            Console.Write("Ingrese Hora de la cita (HH:MM): ");
+            string horaStr = Console.ReadLine();
+
+            if (!DateTime.TryParseExact($"{fechaStr} {horaStr}", "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime fechaHoraCita))
+            {
+                Console.WriteLine("Formato de fecha u hora no válido. Use DD/MM/YYYY HH:MM.");
+                return;
+            }
+
+            try
+            {
+                // Validar si el médico ya tiene una cita a esa hora
+                if (_citas.Any(c => c.DniMedico == medico.Dni && c.FechaHora == fechaHoraCita && c.Estado == EstadoCita.Pendiente))
+                {
+                    Console.WriteLine($"El médico {medico.Nombre} {medico.Apellidos} ya tiene una cita programada para esa fecha y hora.");
+                    return;
+                }
+
+                // Validar si el paciente ya tiene una cita a esa hora
+                if (_citas.Any(c => c.DniPaciente == paciente.Dni && c.FechaHora == fechaHoraCita && c.Estado == EstadoCita.Pendiente))
+                {
+                    Console.WriteLine($"El paciente {paciente.Nombre} {paciente.Apellidos} ya tiene una cita programada para esa fecha y hora.");
+                    return;
+                }
+
+                Cita nuevaCita = new Cita(dniPaciente, dniMedico, fechaHoraCita);
+                _citas.Add(nuevaCita);
+                Console.WriteLine($"Cita programada con éxito: {nuevaCita}");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Error al programar cita: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Error de operación al programar cita: {ex.Message}");
+            }
+        }
+
+        public void CancelarCita()
+        {
+            Console.WriteLine("\n--- Cancelar Cita ---");
+            ListarCitas();
+            /*Console.Write("Ingrese el ID de la cita a cancelar: ");
+            string idCitaStr = Console.ReadLine();
+            if (!Guid.TryParse(idCitaStr, out Guid idCita))
+            {
+                Console.WriteLine("ID de cita no válido. Debe ser un GUID.");
+                return;
+            }
+            Cita citaACancelar = _citas.FirstOrDefault(c => c.IdCita == idCita);
+            if (citaACancelar == null)
+            {
+                Console.WriteLine("Cita no encontrada.");
+                return;
+            }
+            if (citaACancelar.Estado != EstadoCita.Pendiente)
+            {
+                Console.WriteLine("Solo se pueden cancelar citas pendientes.");
+                return;
+            }
+            citaACancelar.Estado = EstadoCita.Cancelada;
+            Console.WriteLine($"Cita cancelada: {citaACancelar}");*/
+        }
+
+        public void ListarCitas()
+        {
+            Console.WriteLine("\n--- Lista de Citas ---");
+            if (_citas.Count == 0)
+            {
+                Console.WriteLine("No hay citas programadas.");
+                return;
+            }
+            foreach (var cita in _citas)
+                Console.WriteLine(cita);
         }
     }
 }
