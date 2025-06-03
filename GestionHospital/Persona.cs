@@ -10,7 +10,7 @@ namespace GestionHospital
         public string Dni
         {
             get { return _dni; }
-            set
+            private set
             {
                 if (!EsDniValido(value))
                     throw new ArgumentException("Formato de DNI no válido. Debe tener 8 números seguidos de 1 letra (ej. 12345678A).");

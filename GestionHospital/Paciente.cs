@@ -10,7 +10,7 @@ namespace GestionHospital
         public string NumeroHistoriaClinica
         {
             get { return _numeroHistoriaClinica; }
-            set
+            private set
             {
                 if (!EsNumeroHistoriaClinicaValido(value))
                     throw new ArgumentException("Formato de Número de Historia Clínica no válido. Debe ser así: HCL-YYYY-0000");

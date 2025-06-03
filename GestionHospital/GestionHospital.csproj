@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cita.cs" />
     <Compile Include="Hospital.cs" />
     <Compile Include="Medico.cs" />
     <Compile Include="Paciente.cs" />
