@@ -19,7 +19,7 @@ namespace GestionHospital
                 opcion = Console.ReadLine();
                 TratarOpcion(opcion);
             }
-            while (opcion != "8");
+            while (opcion != "9");
         }
 
         private void MostrarMenu()
@@ -32,7 +32,8 @@ namespace GestionHospital
             Console.WriteLine("5. Listar pacientes de un médico");
             Console.WriteLine("6. Eliminar un paciente");
             Console.WriteLine("7. Ver la lista de todas las personas del hospital");
-            Console.WriteLine("8. Salir");
+            Console.WriteLine("8. Modificar datos de una persona");
+            Console.WriteLine("9. Salir");
             Console.Write("Seleccione una opción: ");
         }
 
@@ -62,6 +63,9 @@ namespace GestionHospital
                     VerListaDePersonasDelHospital();
                     break;
                 case "8":
+                    ModificarDatosPersona();
+                    break;
+                case "9":
                     Console.WriteLine("Saliendo de la aplicación. ¡Hasta pronto!");
                     return;
                 default:
@@ -104,7 +108,7 @@ namespace GestionHospital
             string numColegiado = Console.ReadLine();
             if (EsNumeroColegiadoDuplicado(numColegiado))
                 throw new InvalidOperationException("Ya existe un médico con este número colegiado.");
-            
+
             return new Medico(nombre, apellidos, dni, especialidad, numColegiado);
         }
 
@@ -229,12 +233,12 @@ namespace GestionHospital
                 Console.WriteLine($"Personal Administrativo {nuevoPersonal.Nombre} {nuevoPersonal.Apellidos} (DNI: {nuevoPersonal.Dni}) dado de alta.");
             }
             // Captura errores de formato de DNI
-            catch (ArgumentException ex) 
+            catch (ArgumentException ex)
             {
                 Console.WriteLine($"Error al dar de alta personal administrativo: {ex.Message}");
             }
             // Captura errores de lógica (DNI duplicado)
-            catch (InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Error al dar de alta personal administrativo: {ex.Message}");
             }
@@ -343,6 +347,143 @@ namespace GestionHospital
             }
             foreach (var pa in personalAdmin)
                 Console.WriteLine(pa);
+        }
+
+        public void ModificarDatosPersona()
+        {
+            Console.WriteLine("\n--- Modificar Datos de una Persona ---");
+            Console.Write("Ingrese el DNI de la persona a modificar: ");
+            string dni = Console.ReadLine();
+            Persona personaAModificar = _personas.FirstOrDefault(p => p.Dni == dni.ToUpper());
+
+            if (personaAModificar == null)
+            {
+                Console.WriteLine("Persona no encontrada.");
+                return;
+            }
+
+            Console.WriteLine($"Datos actuales: {personaAModificar}");
+
+            try
+            {
+                CambiarDatosGeneralesPersona(personaAModificar);
+
+                // Lógica específica para cada tipo de persona
+                if (personaAModificar is Medico medico)
+                {
+                    CambiarDatosMedico(medico);
+                }
+                else if (personaAModificar is Paciente paciente)
+                {
+                    CambiarDatosPaciente(paciente);
+                }
+                else if (personaAModificar is PersonalAdministrativo administrativo)
+                {
+                    CambiarDatosPersonalAdministrativo(administrativo);
+                }
+
+                Console.WriteLine("Datos actualizados correctamente.");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Error al modificar datos: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Error al modificar datos: {ex.Message}");
+            }
+
+            Console.WriteLine($"Datos modificados: {personaAModificar}");
+        }
+
+        private void CambiarDatosGeneralesPersona(Persona personaAModificar)
+        {
+            Console.Write("Nuevo Nombre (dejar en blanco para no modificar): ");
+            string nuevoNombre = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevoNombre)) personaAModificar.Nombre = nuevoNombre;
+
+            Console.Write("Nuevos Apellidos (dejar en blanco para no modificar): ");
+            string nuevosApellidos = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevosApellidos)) personaAModificar.Apellidos = nuevosApellidos;
+        }
+
+        private void CambiarDatosMedico(Medico medico)
+        {
+            Console.Write("Nueva Especialidad (dejar en blanco para no cambiar): ");
+            string nuevaEspecialidad = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevaEspecialidad)) medico.Especialidad = nuevaEspecialidad;
+
+            Console.Write("Nuevo Número Colegiado (dejar en blanco para no cambiar): ");
+            string nuevoNumColegiado = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevoNumColegiado))
+            {
+                if (EsNumeroColegiadoDuplicado(nuevoNumColegiado))
+                    throw new InvalidOperationException("Ya existe un médico con este número colegiado.");
+                medico.NumeroColegiado = nuevoNumColegiado;
+            }
+        }
+
+        private void CambiarDatosPaciente(Paciente paciente)
+        {
+            Console.Write("Nuevos Síntomas (dejar en blanco para no cambiar): ");
+            string nuevosSintomas = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevosSintomas)) paciente.Sintomas = nuevosSintomas;
+
+            Console.WriteLine("\n--- Médicos disponibles para asignación ---");
+            ListarMedicos();
+            Console.Write("Nuevo DNI del Médico Asignado (dejar en blanco para no cambiar): ");
+            string nuevoDniMedico = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevoDniMedico))
+            {
+                AsignacionNuevoMedico(nuevoDniMedico, paciente);
+            }
+        }
+
+        private void AsignacionNuevoMedico(string nuevoDniMedico, Paciente paciente)
+        {
+            // Valida si el nuevo médico existe antes de asignar
+            Medico nuevoMedicoAsignado = _personas.OfType<Medico>().FirstOrDefault(m => m.Dni == nuevoDniMedico.ToUpper());
+            if (nuevoMedicoAsignado == null)
+                Console.WriteLine("Error: El nuevo DNI del médico a asignar no corresponde a un médico registrado. No se cambió el médico asignado.");
+            else
+            {
+                // Eliminar el paciente del médico anterior si existe y es diferente al nuevo médico
+                Medico medicoAnterior = _personas.OfType<Medico>().FirstOrDefault(m => m.Dni == paciente.DniMedico);
+                if (medicoAnterior != null && medicoAnterior != nuevoMedicoAsignado)
+                {
+                    try
+                    {
+                        medicoAnterior.EliminarPaciente(paciente);
+                        Console.WriteLine($"Paciente desasignado del Dr./Dra. {medicoAnterior.Apellidos}.");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine($"Advertencia al desasignar del médico anterior: {ex.Message}");
+                    }
+                }
+
+                try
+                {
+                    paciente.DniMedico = nuevoMedicoAsignado.Dni;
+                    nuevoMedicoAsignado.AsignarPaciente(paciente);
+                    Console.WriteLine($"Paciente reasignado al Dr./Dra. {nuevoMedicoAsignado.Apellidos}.");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine($"Error al reasignar paciente: {ex.Message}");
+                }
+            }
+        }
+
+        private void CambiarDatosPersonalAdministrativo(PersonalAdministrativo administrativo)
+        {
+            Console.Write("Nuevo Puesto (dejar en blanco para no cambiar): ");
+            string nuevoPuesto = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevoPuesto)) administrativo.Cargo = nuevoPuesto;
+
+            Console.Write("Nuevo Departamento (dejar en blanco para no cambiar): ");
+            string nuevoDepartamento = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nuevoDepartamento)) administrativo.Departamento = nuevoDepartamento;
         }
     }
 }
