@@ -279,7 +279,7 @@ namespace GestionHospital
             string dniPacienteAEliminar = Console.ReadLine();
 
             List<Paciente> pacientesEncontrados = _personas.OfType<Paciente>().ToList();
-            Paciente pacienteAEliminar = pacientesEncontrados.FirstOrDefault(p => p.Dni == dniPacienteAEliminar);
+            Paciente pacienteAEliminar = pacientesEncontrados.FirstOrDefault(p => p.Dni == dniPacienteAEliminar.ToUpper());
 
             if (pacienteAEliminar == null)
             {
