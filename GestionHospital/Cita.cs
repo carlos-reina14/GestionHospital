@@ -13,8 +13,8 @@ namespace GestionHospital
     {
         public Guid IdCita { get; private set; }
         public DateTime FechaHora { get; set; }
-        public string DniPaciente { get; private set; }
-        public string DniMedico { get; private set; }
+        public string DniPaciente { get; set; }
+        public string DniMedico { get; set; }
         public EstadoCita Estado { get; set; }
 
         public Cita(string dniPaciente, string dniMedico, DateTime fechaHora)
@@ -35,7 +35,7 @@ namespace GestionHospital
 
         public override string ToString()
         {
-            return $"ID Cita: {IdCita.ToString().Substring(0, 8)}... - Fecha: {FechaHora:dd/MM/yyyy HH:mm} - Médico DNI: {DniMedico} - Paciente DNI: {DniPaciente} - Estado: {Estado}";
+            return $"ID Cita: {IdCita.ToString().Substring(0, 8)} - Fecha: {FechaHora:dd/MM/yyyy HH:mm} - Médico DNI: {DniMedico} - Paciente DNI: {DniPaciente} - Estado: {Estado}";
         }
     }
 }
