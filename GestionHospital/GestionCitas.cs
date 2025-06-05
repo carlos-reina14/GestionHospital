@@ -125,9 +125,9 @@ namespace GestionHospital
             ListarCitas();
 
             Console.Write("Ingrese el ID de la cita a cancelar: ");
-            string idCitaStr = Console.ReadLine();
+            string idCita = Console.ReadLine();
 
-            Cita citaACancelar = BuscarCitaPorIdParcial(idCitaStr);
+            Cita citaACancelar = BuscarCitaPorIdParcial(idCita);
             if (citaACancelar == null)
             {
                 Console.WriteLine("Cita no encontrada.");
@@ -162,7 +162,7 @@ namespace GestionHospital
             {
                 string nombreMedico = _gestionPersonal.BuscarPersonaPorDni(cita.DniMedico) is Medico medico ? $"{medico.Nombre} {medico.Apellidos}" : "Médico desconocido";
                 string nombrePaciente = _gestionPersonal.BuscarPersonaPorDni(cita.DniPaciente) is Paciente paciente ? $"{paciente.Nombre} {paciente.Apellidos}" : "Paciente desconocido";
-                
+
                 Console.WriteLine($@"{cita}
         Dr./Dra.: {nombreMedico} (DNI: {cita.DniMedico})
         Paciente: {nombrePaciente} (DNI: {cita.DniPaciente})");
@@ -175,9 +175,9 @@ namespace GestionHospital
             ListarCitas();
 
             Console.Write("Ingrese el ID de la cita a modificar: ");
-            string idCitaStr = Console.ReadLine();
+            string idCita = Console.ReadLine();
 
-            Cita citaAModificar = BuscarCitaPorIdParcial(idCitaStr);
+            Cita citaAModificar = BuscarCitaPorIdParcial(idCita);
 
             if (citaAModificar == null)
             {
@@ -337,70 +337,72 @@ Seleccione una opción (o dejar en blanco para no modificar nada): ");
             Console.WriteLine("\n--- Registrar Historial Médico (Post-Consulta) ---");
             ListarCitas();
 
-            if (_citas.Count == 0)
-            {
-                Console.WriteLine("No hay citas programadas para registrar historial.");
-                return;
-            }
+            // 1. Verificar si hay una cita para registrar historial
+            if(!HayCitaParaHistorial(out Cita citaParaHistorial, out Paciente paciente)) return;
 
-            Console.Write("Ingrese el ID de la cita para registrar el historial : ");
-            string idCitaStr = Console.ReadLine();
+            // 2. Mostrar información de la cita y paciente
+            MostrarDatosCita(citaParaHistorial, paciente);
 
-            Cita citaParaHistorial = BuscarCitaPorIdParcial(idCitaStr);
+            // 3. Obtener datos del historial médico
+            (string diagnostico, string tratamiento, string notas) = ObtenerDatosHistorial();
 
-            if (citaParaHistorial == null)
-            {
-                Console.WriteLine("Cita no encontrada o ID inválido.");
-                return;
-            }
-
-            if (citaParaHistorial.Estado == EstadoCita.Cancelada)
-            {
-                Console.WriteLine("No se puede registrar historial para una cita cancelada.");
-                return;
-            }
-            if (citaParaHistorial.FechaHora > DateTime.Now)
-            {
-                Console.WriteLine("La cita aún no ha ocurrido. No se puede registrar historial médico.");
-                return;
-            }
-            if (citaParaHistorial.HistorialGenerado)
-            {
-                Console.WriteLine("Ya existe una entrada de historial para esta cita.");
-                return;
-            }
-
-            if (!(_gestionPersonal.BuscarPersonaPorDni(citaParaHistorial.DniPaciente) is Paciente paciente))
-            {
-                Console.WriteLine("Error: Paciente de la cita no encontrado en el sistema.");
-                return;
-            }
-
-            // Para mostrar el nombre del médico de la cita
-            string nombreMedicoCita = _gestionPersonal.BuscarPersonaPorDni(citaParaHistorial.DniMedico) is Medico medicoCita ? $"{medicoCita.Nombre} {medicoCita.Apellidos}" : "Médico desconocido";
-
-
-            Console.WriteLine($"\nRegistrando historial para Paciente: {paciente.Nombre} {paciente.Apellidos} (DNI: {paciente.Dni})");
-            Console.WriteLine($"Cita con Médico: {nombreMedicoCita} el {citaParaHistorial.FechaHora:dd/MM/yyyy HH:mm}");
-
-            (string diagnostico, string tratamiento, string notas) = ObtenerDiagnosticoTratamientoNotas();
-
-            HistorialMedico nuevaEntrada = new HistorialMedico(
-                citaParaHistorial.IdCita,
-                citaParaHistorial.FechaHora,
-                citaParaHistorial.DniMedico,
-                diagnostico,
-                tratamiento,
-                notas
-            );
-
-            paciente.HistorialMedico.Add(nuevaEntrada);
-            citaParaHistorial.HistorialGenerado = true;
+            // 4. Crear nueva entrada de historial médico
+            CrearEntradaHistorial(citaParaHistorial, paciente, diagnostico, tratamiento, notas);
 
             Console.WriteLine("\nHistorial médico registrado con éxito.");
         }
 
-        private (string Diagnostico, string Tratamiento, string Notas) ObtenerDiagnosticoTratamientoNotas()
+        private bool HayCitaParaHistorial(out Cita cita, out Paciente paciente)
+        {
+            paciente = null;
+
+            Console.Write("Ingrese el ID de la cita para registrar el historial: ");
+            string idCita = Console.ReadLine();
+
+            cita = BuscarCitaPorIdParcial(idCita);
+            if (cita == null)
+            {
+                Console.WriteLine("Cita no encontrada o ID inválido.");
+                return false;
+            }
+
+            // Validaciones específicas para el registro del historial
+            if (cita.Estado == EstadoCita.Cancelada)
+            {
+                Console.WriteLine("No se puede registrar historial para una cita cancelada.");
+                return false;
+            }
+            if (cita.FechaHora > DateTime.Now)
+            {
+                Console.WriteLine("La cita aún no ha ocurrido. No se puede registrar historial médico.");
+                return false;
+            }
+            if (cita.HistorialGenerado)
+            {
+                Console.WriteLine("Ya existe una entrada de historial para esta cita.");
+                return false;
+            }
+
+            // Obtener el paciente asociado a la cita
+            if (!(_gestionPersonal.BuscarPersonaPorDni(cita.DniPaciente) is Paciente p))
+            {
+                Console.WriteLine("Error: Paciente de la cita no encontrado en el sistema.");
+                return false;
+            }
+            paciente = p;
+            return true;
+        }
+
+        private void MostrarDatosCita(Cita cita, Paciente paciente)
+        {
+            // Para mostrar el nombre del médico de la cita
+            string nombreMedicoCita = _gestionPersonal.BuscarPersonaPorDni(cita.DniMedico) is Medico medicoCita ? $"{medicoCita.Nombre} {medicoCita.Apellidos}" : "Médico desconocido";
+
+            Console.WriteLine($"\nRegistrando historial para Paciente: {paciente.Nombre} {paciente.Apellidos} (DNI: {paciente.Dni})");
+            Console.WriteLine($"Cita con Médico: {nombreMedicoCita} el {cita.FechaHora:dd/MM/yyyy HH:mm}");
+        }
+
+        private (string Diagnostico, string Tratamiento, string Notas) ObtenerDatosHistorial()
         {
             Console.Write("Ingrese Diagnóstico: ");
             string diagnostico = Console.ReadLine();
@@ -410,6 +412,21 @@ Seleccione una opción (o dejar en blanco para no modificar nada): ");
             string notasMedicas = Console.ReadLine();
 
             return (diagnostico, tratamiento, notasMedicas);
+        }
+
+        private void CrearEntradaHistorial(Cita cita, Paciente paciente, string diagnostico, string tratamiento, string notas)
+        {
+            HistorialMedico nuevaEntrada = new HistorialMedico(
+                cita.IdCita,
+                cita.FechaHora,
+                cita.DniMedico,
+                diagnostico,
+                tratamiento,
+                notas
+            );
+
+            paciente.HistorialMedico.Add(nuevaEntrada);
+            cita.HistorialGenerado = true;
         }
 
         public void VerHistorialMedicoPaciente()
@@ -426,6 +443,11 @@ Seleccione una opción (o dejar en blanco para no modificar nada): ");
                 return;
             }
 
+            ListarHistorialPaciente(paciente);
+        }
+
+        private void ListarHistorialPaciente(Paciente paciente)
+        {
             Console.WriteLine($"\nHistorial Médico de: {paciente.Nombre} {paciente.Apellidos} (DNI: {paciente.Dni})");
 
             if (paciente.HistorialMedico.Count == 0)
