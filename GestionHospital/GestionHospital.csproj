@@ -46,6 +46,7 @@
     <Compile Include="Cita.cs" />
     <Compile Include="GestionCitas.cs" />
     <Compile Include="GestionPersonal.cs" />
+    <Compile Include="HistorialMedico.cs" />
     <Compile Include="Hospital.cs" />
     <Compile Include="Medico.cs" />
     <Compile Include="Paciente.cs" />

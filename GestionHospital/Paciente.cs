@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace GestionHospital
@@ -19,6 +20,7 @@ namespace GestionHospital
         }
         public string Sintomas { get; set; }
         public string DniMedico { get; set; }
+        public List<HistorialMedico> HistorialMedico { get; set; }
 
         public Paciente(string nombre, string apellidos, string dni, string numeroHistoriaClinica, string sintomas, string dniMedico)
             : base(nombre, apellidos, dni)
@@ -26,6 +28,7 @@ namespace GestionHospital
             NumeroHistoriaClinica = numeroHistoriaClinica;
             Sintomas = sintomas;
             DniMedico = dniMedico;
+            HistorialMedico = new List<HistorialMedico>();
         }
 
         private static bool EsNumeroHistoriaClinicaValido(string numeroHistoriaClinica)

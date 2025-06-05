@@ -31,29 +31,22 @@ namespace GestionHospital
 
         private void MostrarMenuPrincipal()
         {
-            Console.WriteLine("\n--- Menú Principal del Hospital ---");
-            Console.WriteLine("1. Gestión de Personal");
-            Console.WriteLine("2. Gestión de Citas");
-            Console.WriteLine("0. Salir");
-            Console.Write("Seleccione una opción: ");
+            Console.WriteLine(@"
+--- Menú Principal del Hospital ---
+1. Gestión de Personal
+2. Gestión de Citas
+0. Salir
+Seleccione una opción: ");
         }
 
         private void TratarOpcionPrincipal(string opcion)
         {
             switch (opcion)
             {
-                case "1":
-                    GestionarPersonal();
-                    break;
-                case "2":
-                    GestionarCitas();
-                    break;
-                case "0":
-                    Console.WriteLine("Saliendo de la aplicación. ¡Hasta pronto!");
-                    return;
-                default:
-                    Console.WriteLine("Opción no válida. Intente de nuevo.");
-                    break;
+                case "1": GestionarPersonal(); break;
+                case "2": GestionarCitas(); break;
+                case "0": Console.WriteLine("Saliendo de la aplicación. ¡Hasta pronto!"); return;
+                default: Console.WriteLine("Opción no válida. Intente de nuevo."); break;
             }
             LimpiarPantalla();
         }
@@ -72,17 +65,18 @@ namespace GestionHospital
 
         private void MostrarMenuGestionPersonal()
         {
-            Console.WriteLine("\n--- Gestión de Personal y Pacientes ---");
-            Console.WriteLine("1. Dar de alta un médico");
-            Console.WriteLine("2. Dar de alta un paciente");
-            Console.WriteLine("3. Dar de alta personal administrativo");
-            Console.WriteLine("4. Listar médicos");
-            Console.WriteLine("5. Listar pacientes de un médico");
-            Console.WriteLine("6. Eliminar un paciente");
-            Console.WriteLine("7. Ver la lista de todas las personas del hospital");
-            Console.WriteLine("8. Modificar datos de una persona");
-            Console.WriteLine("0. Volver al Menú Principal");
-            Console.Write("Seleccione una opción: ");
+            Console.WriteLine(@"
+--- Gestión de Personal y Pacientes ---
+1. Dar de alta un médico
+2. Dar de alta un paciente
+3. Dar de alta personal administrativo
+4. Listar médicos
+5. Listar pacientes de un médico
+6. Eliminar un paciente
+7. Ver la lista de todas las personas del hospital
+8. Modificar datos de una persona
+0. Volver al Menú Principal
+Seleccione una opción: ");
         }
 
         private void TratarOpcionGestionPersonal(string opcionPersonal)
@@ -124,12 +118,15 @@ namespace GestionHospital
 
         private void MostrarMenuGestionCitas()
         {
-            Console.WriteLine("\n--- Gestión de Citas ---");
-            Console.WriteLine("1. Programar una cita");
-            Console.WriteLine("2. Cancelar una cita");
-            Console.WriteLine("3. Modificar una cita");
-            Console.WriteLine("4. Listar todas las citas");
-            Console.WriteLine("0. Salir");
+            Console.WriteLine(@"
+--- Gestión de Citas ---
+1. Programar una cita
+2. Cancelar una cita
+3. Modificar una cita
+4. Listar todas las citas
+5. Registrar historial médico de una cita
+6. Ver historial médico de paciente
+0. Salir");
         }
 
         private void TratarOpcionGestionCitas(string opcionCitas)
@@ -140,6 +137,8 @@ namespace GestionHospital
                 case "2": _gestionCitas.CancelarCita(); break;
                 case "3": _gestionCitas.ModificarCita(); break;
                 case "4": _gestionCitas.ListarCitas(); break;
+                case "5": _gestionCitas.RegistrarHistorialMedico(); break;
+                case "6": _gestionCitas.VerHistorialMedicoPaciente(); break;
                 case "0": Console.WriteLine("Volviendo al Menú Principal..."); return;
                 default: Console.WriteLine("Opción no válida. Intente de nuevo."); break;
             }

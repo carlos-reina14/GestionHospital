@@ -16,6 +16,7 @@ namespace GestionHospital
         public string DniPaciente { get; set; }
         public string DniMedico { get; set; }
         public EstadoCita Estado { get; set; }
+        public bool HistorialGenerado { get; set; }
 
         public Cita(string dniPaciente, string dniMedico, DateTime fechaHora)
         {
@@ -31,11 +32,12 @@ namespace GestionHospital
             DniMedico = dniMedico;
             FechaHora = fechaHora;
             Estado = EstadoCita.Pendiente;
+            HistorialGenerado = false;
         }
 
         public override string ToString()
         {
-            return $"ID Cita: {IdCita.ToString().Substring(0, 8)} - Fecha: {FechaHora:dd/MM/yyyy HH:mm} - Médico DNI: {DniMedico} - Paciente DNI: {DniPaciente} - Estado: {Estado}";
+            return $"ID Cita: {IdCita.ToString().Substring(0, 8)} - Fecha: {FechaHora:dd/MM/yyyy HH:mm} - Estado: {Estado}";
         }
     }
 }
